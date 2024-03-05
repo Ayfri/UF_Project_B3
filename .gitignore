@@ -1,0 +1,10 @@
+### PyCharm template
+### PyCharm
+.idea
+
+### Environment
+.venv
+venv
+
+### Environment variables
+.env
