@@ -1,32 +1,15 @@
-import os
-
 import dotenv
-from google.cloud import bigquery
-from google.oauth2 import service_account
-from pprint import pprint
-
 dotenv.load_dotenv()
 
+from pprint import pprint
+
+from bq.queries import get_events
+
+
 def main() -> None:
-    credentials = service_account.Credentials.from_service_account_file(os.getenv("GOOGLE_APPLICATION_CREDENTIALS"))
-    client = bigquery.Client(credentials=credentials)
+    events = get_events(19, year=2010)
 
-    # Perform a query.
-    QUERY = (
-        """
-        SELECT SqlDate, COUNT(*) as TotalEvents
-        FROM `gdelt-bq.gdeltv2.events`
-        WHERE EventRootCode='19'
-        GROUP BY SqlDate
-        ORDER BY SqlDate
-        LIMIT 100;
-        """
-    )
-
-    query_job = client.query(QUERY)  # API request
-    rows = query_job.result()  # Waits for query to finish
-
-    for row in rows:
+    for row in events:
         pprint(row)
 
 
