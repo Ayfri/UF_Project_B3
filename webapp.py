@@ -5,7 +5,7 @@ import plotly.express as px
 import pandas as pd
 from dash.html import Figure
 
-from bq.queries import get_events
+from bq.queries import get_events, get_most_fucked_countries
 
 app = Dash(__name__)
 
@@ -17,10 +17,17 @@ def update_graph() -> Figure:
 	return px.line(df, x='SQLDATE', y='NumArticles', title='Number of Articles per Year')
 
 
+def update_graph_2() -> Figure:
+	df = pd.DataFrame(get_most_fucked_countries(2023, count=10))
+	pprint(df)
+	return px.line(df, x='Actor1CountryCode', y='NumberOfEvents', title='Countries with most conflicts events in the last year')
+
+
 app.layout = html.Div(
 	[
 		html.H1(children='Title of Dash App', style={'textAlign': 'center'}),
-		dcc.Graph(id='graph-content', figure=update_graph())
+		dcc.Graph(id='graph-content', figure=update_graph()),
+		dcc.Graph(id='graph2-content', figure=update_graph_2())
 	]
 )
 
