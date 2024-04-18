@@ -1,5 +1,6 @@
 from google.cloud.bigquery import Row
 
+from bq.caching import get_request, has_request, save_request
 from bq.connection import client
 
 
@@ -7,14 +8,20 @@ def run_query(query: str) -> list[dict]:
 	"""
 	Runs a query on BigQuery and returns the results.
 	"""
+	query = query.strip().replace('\n', ' ').replace('\t', '')
 	print(f"Running query: {query}")
+	if has_request(query):
+		return get_request(query)
+
 	query_job = client.query(query)
 	result = query_job.result()
 	if not result:
 		return []
 
 	row: Row
-	return [dict(row) for row in result]
+	query_data = [dict(row) for row in result]
+	save_request(query, query_data)
+	return query_data
 
 
 def get_events(code: int, limit: int = 100, **where: str | int | float | bool) -> list[dict]:
