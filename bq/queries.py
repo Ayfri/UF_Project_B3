@@ -46,3 +46,4 @@ def get_most_fucked_countries(year: int, count: int = 5) -> list[dict]:
         LIMIT {count};
         """
     return run_query(query)
+
