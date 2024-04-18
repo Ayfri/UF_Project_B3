@@ -18,9 +18,11 @@ def update_graph() -> Figure:
 
 
 def update_graph_2() -> Figure:
-	df = pd.DataFrame(get_most_fucked_countries(2023, count=10))
-	pprint(df)
-	return px.line(df, x='Actor1CountryCode', y='NumberOfEvents', title='Countries with most conflicts events in the last year')
+    df = pd.DataFrame(get_most_fucked_countries(2023, count=10))
+    pprint(df)
+    fig = px.bar(df, x='Actor1CountryCode', y='NumberOfEvents', title='Countries with most conflicts events in the last year')
+    fig.update_layout(xaxis_title="CountryCode", yaxis_title="NumberOfConflictsEvents")
+    return fig
 
 
 app.layout = html.Div(
