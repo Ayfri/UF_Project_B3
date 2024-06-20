@@ -1,17 +1,31 @@
-from dash import html
+from dash import html, dcc
 
-layout_home = html.Div([
+
+home_layout = html.Div([
     html.H1('Home Page'),
-    html.P('Welcome to the home page.')
+    dcc.Link('Home', href='/'),
+    html.Br(),
+    dcc.Link('Dashboard', href='/dashboard'),
+    html.Br(),
+    dcc.Link('Search', href='/search')
 ])
 
-layout_page1 = html.Div([
-    html.H1('Page 1'),
-    html.P('This is page 1.')
+
+dashboard_layout = html.Div([
+    html.H1('Dashboard'),
+    dcc.Link('Home', href='/'),
+    html.Br(),
+    dcc.Link('Dashboard', href='/dashboard'),
+    html.Br(),
+    dcc.Link('Search', href='/search')
 ])
 
-layout_page2 = html.Div([
-    html.H1('Page 2'),
-    html.P('This is page 2.')
-])
 
+search_layout = html.Div([
+    html.H1('Search Page'),
+    dcc.Link('Home', href='/'),
+    html.Br(),
+    dcc.Link('Dashboard', href='/dashboard'),
+    html.Br(),
+    dcc.Link('Search', href='/search')
+])
