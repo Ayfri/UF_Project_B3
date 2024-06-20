@@ -1,3 +1,6 @@
+import re
+import textwrap
+
 from google.cloud.bigquery import Row
 
 from bq.caching import get_request, has_request, save_request
@@ -8,8 +11,8 @@ def run_query(query: str) -> list[dict]:
 	"""
 	Runs a query on BigQuery and returns the results.
 	"""
-	query = query.strip().replace('\n', ' ').replace('\t', '')
-	print(f"Running query: {query}")
+	query = textwrap.dedent(query).strip().replace('\n', ' ')
+	print(f"Running query: {re.sub(r' +', ' ', query)}")
 	if has_request(query):
 		return get_request(query)
 
@@ -37,13 +40,12 @@ def get_events(code: int, limit: int = 100, **where: str | int | float | bool) -
 
 
 def get_most_fucked_countries(year: int, count: int = 5) -> list[dict]:
-    query = f"""
+	query = f"""
         SELECT Actor1CountryCode, COUNT(*) as NumberOfEvents
         FROM `gdelt-bq.gdeltv2.events`
         WHERE EventRootCode='19' AND year={year} AND Actor1CountryCode!='None'
         GROUP BY Actor1CountryCode
         ORDER BY NumberOfEvents DESC
         LIMIT {count};
-        """
-    return run_query(query)
-
+    """
+	return run_query(query)
