@@ -7,22 +7,34 @@ from bq.caching import get_request, has_request, save_request
 from bq.connection import client
 
 
-def run_query(query: str) -> list[dict]:
+def run_query(query: str, debug: bool = False) -> list[dict]:
 	"""
 	Runs a query on BigQuery and returns the results.
 	"""
 	query = textwrap.dedent(query).strip().replace('\n', ' ')
 	print(f"Running query: {re.sub(r' +', ' ', query)}")
 	if has_request(query):
+		if debug:
+			print('Request already cached, returning cached data.')
 		return get_request(query)
 
 	query_job = client.query(query)
 	result = query_job.result()
+	print(f"Query complete, fetching data.")
 	if not result:
 		return []
 
 	row: Row
-	query_data = [dict(row) for row in result]
+	query_data: list[dict] = []
+	# Fetch rows in batches
+	# Convert to DataFrame for efficient processing
+	df = result.to_dataframe(progress_bar_type='tqdm' if debug else None)
+
+	# Convert DataFrame to list of dictionaries
+	query_data = df.to_dict(orient='records')
+
+	print(f"Fetched {len(query_data)} rows.")
+
 	save_request(query, query_data)
 	return query_data
 
