@@ -1,7 +1,9 @@
 altair==5.2.0
+cartopy==0.23.0
 db-dtypes==1.2.0
 dash==2.16.1
 gdelt==0.1.14
+geopy==2.4.1
 google-cloud-bigquery==3.19.0
 jupyter==1.0.0
 matplotlib==3.8.3
