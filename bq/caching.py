@@ -1,6 +1,7 @@
 from bq.connection import redis_connection
 import json
 
+
 def get_request(request: str) -> list[dict]:
 	"""
 	Gets a request from the cache.
