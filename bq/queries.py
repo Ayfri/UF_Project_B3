@@ -9,6 +9,23 @@ from bq.caching import get_request, has_request, save_request
 from bq.connection import client
 
 
+def create_wheres(*, add_where_keyword: bool = False, **where: str | int | float | bool | None) -> str:
+	"""
+	Creates a WHERE clause from a dictionary.
+	"""
+	if not where:
+		return ''
+
+	join = ' WHERE ' if add_where_keyword else ' AND '
+	join += ' AND '.join([f"{key}={repr(value)}" for key, value in where.items()])
+	print(f"Join: {join}")
+	join = re.sub(r"='!=", "!='", join)
+	print(f"Join2: {join}")
+	join = re.sub(r"!='?None'?", " IS NOT NULL", join)
+	join = re.sub(r"='?None'?", " IS NULL", join)
+	return join
+
+
 def run_query(query: str, debug: bool = True) -> DataFrame:
 	"""
 	Runs a query on BigQuery and returns the results.
@@ -40,7 +57,7 @@ def get_events(code: int, limit: int = 100, order: str = "SqlDate", **where: str
 		SELECT *
 		FROM `gdelt-bq.gdeltv2.events`
 		WHERE EventRootCode='{code}'
-		{'AND '.join([f"AND {key}={repr(value)}" for key, value in where.items()]) if where else ''}
+		{create_wheres(**where)}
 		ORDER BY {order}
 		LIMIT {limit};
 		"""
@@ -51,7 +68,7 @@ def get_all_events(limit: int = 100, order: str = "SqlDate", **where: str | int 
 	query = f"""
 		SELECT *
 		FROM `gdelt-bq.gdeltv2.events`
-		{f'WHERE {" AND ".join([f"{key}={repr(value)}" for key, value in where.items()])}' if where else ''}
+		{create_wheres(add_where_keyword=True, **where)}
 		ORDER BY {order}
 		LIMIT {limit};
 		"""
