@@ -1,42 +1,54 @@
-import matplotlib.pyplot as plt
+from datetime import datetime
+
 import pandas as pd
 from dash import dcc, html
 from dash.html import Figure
-import cartopy.crs as ccrs
-import cartopy.feature as cfeature
-from cartopy.io.img_tiles import GoogleTiles
-from cartopy.mpl.geoaxes import GeoAxes
 
 import plotly.express as px
-from bq.queries import get_events
+from plotly import graph_objects
+
+from bq.codes import add_event_code_names
+from bq.queries import get_all_events
 from pages.components import header
 
 
-def create_cartopy_graph(df: pd.DataFrame) -> Figure:
-	# plot a map of the events
-	# fig = px.
-	# ax: GeoAxes = fig.add_subplot(1, 1, 1, projection=ccrs.PlateCarree())
-	# ax.set_global()
-	# ax.set_extent([-180, 180, -90, 90], crs=ccrs.PlateCarree())
-	# ax.coastlines(linestyle='-', color='yellow', linewidth=1.5)
-	# ax.add_feature(cfeature.LAND)
-	# ax.add_feature(cfeature.OCEAN)
-	# ax.add_feature(cfeature.BORDERS, linestyle='-', edgecolor='yellow', linewidth=1.5)
-	# ax.add_feature(cfeature.LAKES)
-	# ax.add_feature(cfeature.RIVERS)
-	# tiler = GoogleTiles(style="satellite", cache=True)
-	# ax.add_image(tiler, 4)
-	#
-	# ax.scatter(
-	# 	df['ActionGeo_Long'],
-	# 	df['ActionGeo_Lat'],
-	# 	transform=ccrs.PlateCarree(),
-	# 	color='red',
-	# 	marker='.',
-	# )
-	#
+def create_cartopy_graph(df: pd.DataFrame)-> graph_objects.Figure:
+	df['timestamp'] = pd.to_datetime(df['SQLDATE'], format='%Y%m%d', errors='coerce')
+	df['timestamp'].dt.month_name(locale='fr_FR.UTF-8')
+	df['formatted-date'] = df['timestamp'].dt.strftime('%d %B %Y')
+	df = add_event_code_names(df)
 
-	fig = px.scatter_mapbox(df, lat='ActionGeo_Lat', lon='ActionGeo_Long', hover_name='Actor1Name', zoom=1, height=800, mapbox_style="open-street-map")
+	fig = px.scatter_mapbox(
+		df,
+		lat='ActionGeo_Lat',
+		lon='ActionGeo_Long',
+		hover_name='Description',
+		hover_data={
+			'Actor1Name': True,
+			'Actor2Name': True,
+			'NumArticles': True,
+			'GoldsteinScale': True,
+			'EventCode': True,
+			'formatted-date': True,
+		},
+		color_continuous_scale=px.colors.diverging.RdYlGn,  # green to red scale
+		zoom=2,
+		height=900,
+		size='NumArticles',
+		color='GoldsteinScale',
+		size_max=30,
+		mapbox_style="open-street-map",
+		labels={
+			'ActionGeo_Lat': 'Latitude',
+			'ActionGeo_Long': 'Longitude',
+			'Actor1Name': 'Acteur 1 Nom',
+			'Actor2Name': 'Acteur 2 Nom',
+			'EventCode': "Code de l'évènement",
+			'GoldsteinScale': 'Échelle de Goldstein',
+			'NumArticles': "Nombre d'articles",
+			"formatted-date": "Date de l'évènement",
+		}
+	)
 	fig.update_layout(
 		mapbox_style="white-bg",
 		mapbox_layers=[
@@ -53,15 +65,52 @@ def create_cartopy_graph(df: pd.DataFrame) -> Figure:
 	return fig
 
 
-def map_graph() -> Figure:
-	df = pd.DataFrame(get_events(19, year=2020, limit=10_000))
+def simple_map_graph() -> Figure:
+	df = get_all_events(limit=1_000, order='rand()')
 	graph = create_cartopy_graph(df)
-	# graph.tight_layout()
+	return graph
+
+
+def map_links_graph() -> Figure:
+	df = get_all_events(limit=1_000, order='rand()', ActionGeo_Type=1, Actor2Geo_Lat="!=None")
+	graph = create_cartopy_graph(df)
+
+	# Collect lat/lon coordinates for lines
+	lat_lines = []
+	lon_lines = []
+	for _, row in df.iterrows():
+		lat_lines.extend([row['ActionGeo_Lat'], row['Actor2Geo_Lat'], None])
+		lon_lines.extend([row['ActionGeo_Long'], row['Actor2Geo_Long'], None])
+
+	# Add a single trace for all lines
+	graph.add_trace(
+		graph_objects.Scattermapbox(
+			lat=lat_lines,
+			lon=lon_lines,
+			mode='lines+markers',
+			line=graph_objects.scattermapbox.Line(width=1, color='#ffaaaa'),
+			showlegend=False,
+			opacity=0.4,
+			marker=graph_objects.scattermapbox.Marker(size=6, color='#ffffff'),
+		)
+	)
 	return graph
 
 
 content = html.Div([
-	dcc.Graph(id='world-content', figure=map_graph()),
+	dcc.Markdown("""
+	## Évènements mondiaux
+	Carte des évènements mondiaux.
+	La taille des points représente le nombre d'articles et la couleur l'échelle de Goldstein.
+	"""),
+	dcc.Graph(id='world-content', figure=simple_map_graph()),
+	dcc.Markdown("""
+	## Évènements mondiaux avec liens
+	Carte des évènements mondiaux avec les liens entre les acteurs.
+	La taille des points représente le nombre d'articles et la couleur l'échelle de Goldstein.
+	Les lignes représentent les liens entre les acteurs.
+	"""),
+	dcc.Graph(id='world-links-content', figure=map_links_graph()),
 ])
 
 world_layout = html.Div([
