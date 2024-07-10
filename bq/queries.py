@@ -12,18 +12,27 @@ from bq.connection import client
 
 
 def create_wheres(*, add_where_keyword: bool = False, **where: str | int | float | bool | None) -> str:
-	"""
-	Creates a WHERE clause from a dictionary.
-	"""
-	if not where:
-		return ''
+    """
+    Creates a WHERE clause from a dictionary.
+    """
+    if not where:
+        return ''
 
-	join = ' WHERE ' if add_where_keyword else ' AND '
-	join += ' AND '.join([f"{key}={repr(value)}" for key, value in where.items()])
-	join = re.sub(r"='!=", "!='", join)
-	join = re.sub(r"!='?None'?", " IS NOT NULL", join)
-	join = re.sub(r"='?None'?", " IS NULL", join)
-	return join
+    join = ' WHERE ' if add_where_keyword else ' AND '
+    conditions = []
+    for key, value in where.items():
+        # Ensure the key is formatted properly with a valid operator
+        match = re.match(r'^(.*?)([<>=!]+)$', key)
+        if match:
+            field, operator = match.groups()
+            conditions.append(f"{field} {operator} {repr(value)}")
+        else:
+            conditions.append(f"{key}={repr(value)}")
+    join += ' AND '.join(conditions)
+    join = re.sub(r"='!=", "!='", join)
+    join = re.sub(r"!='?None'?", " IS NOT NULL", join)
+    join = re.sub(r"='?None'?", " IS NULL", join)
+    return join
 
 
 @cache
