@@ -14,7 +14,6 @@ from pages.components import header
 
 def create_cartopy_graph(df: pd.DataFrame)-> graph_objects.Figure:
 	df['timestamp'] = pd.to_datetime(df['SQLDATE'], format='%Y%m%d', errors='coerce')
-	df['timestamp'].dt.month_name(locale='fr_FR.UTF-8')
 	df['formatted-date'] = df['timestamp'].dt.strftime('%d %B %Y')
 	df = add_event_code_names(df)
 
