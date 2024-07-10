@@ -4,6 +4,7 @@ import plotly.express as px
 import pandas as pd
 
 from bq.queries import get_events, get_most_fucked_countries
+from pages.components import header, headers
 
 
 def update_graph() -> Figure:
@@ -12,10 +13,10 @@ def update_graph() -> Figure:
 
 
 def update_graph_2() -> Figure:
-    df = pd.DataFrame(get_most_fucked_countries(2023, count=10))
-    fig = px.bar(df, x='Actor1CountryCode', y='NumberOfEvents', title='Countries with most conflicts events in the last year')
-    fig.update_layout(xaxis_title="CountryCode", yaxis_title="NumberOfConflictsEvents")
-    return fig
+	df = pd.DataFrame(get_most_fucked_countries(2023, count=10))
+	fig = px.bar(df, x='Actor1CountryCode', y='NumberOfEvents', title='Countries with most conflicts events in the last year')
+	fig.update_layout(xaxis_title="CountryCode", yaxis_title="NumberOfConflictsEvents")
+	return fig
 
 
 content = html.Div(
@@ -26,15 +27,10 @@ content = html.Div(
 	]
 )
 
-
-
-dashboard_layout = html.Div([
-    html.H1('Dashboard'),
-    dcc.Link('Home', href='/'),
-    html.Br(),
-    dcc.Link('Dashboard', href='/dashboard'),
-    html.Br(),
-    dcc.Link('Search', href='/search'),
-    html.Br(),
-    content
-])
+dashboard_layout = html.Div(
+	[
+		*header("Dashboard"),
+		dcc.Link('World map', '/world'),
+		content
+	]
+)
