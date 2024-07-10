@@ -39,13 +39,13 @@ def run_query(query: str, debug: bool = False) -> list[dict]:
 	return query_data
 
 
-def get_events(code: int, limit: int = 100, **where: str | int | float | bool) -> list[dict]:
+def get_events(code: int, limit: int = 100, order: str = "SqlDate", **where: str | int | float | bool) -> list[dict]:
 	query = f"""
 		SELECT *
 		FROM `gdelt-bq.gdeltv2.events`
 		WHERE EventRootCode='{code}'
 		{'AND '.join([f"AND {key}={repr(value)}" for key, value in where.items()]) if where else ''}
-		ORDER BY SqlDate
+		ORDER BY {order}
 		LIMIT {limit};
 		"""
 	return run_query(query)
