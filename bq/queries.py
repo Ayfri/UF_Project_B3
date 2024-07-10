@@ -1,3 +1,5 @@
+from functools import cache
+
 import pandas as pd
 import re
 import textwrap
@@ -18,14 +20,13 @@ def create_wheres(*, add_where_keyword: bool = False, **where: str | int | float
 
 	join = ' WHERE ' if add_where_keyword else ' AND '
 	join += ' AND '.join([f"{key}={repr(value)}" for key, value in where.items()])
-	print(f"Join: {join}")
 	join = re.sub(r"='!=", "!='", join)
-	print(f"Join2: {join}")
 	join = re.sub(r"!='?None'?", " IS NOT NULL", join)
 	join = re.sub(r"='?None'?", " IS NULL", join)
 	return join
 
 
+@cache
 def run_query(query: str, debug: bool = True) -> DataFrame:
 	"""
 	Runs a query on BigQuery and returns the results.
