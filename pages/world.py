@@ -237,7 +237,7 @@ content = html.Div(
 		dcc.Graph(id='world-country-content'),
 		dcc.Dropdown(
 			options=[
-				{'label': f"{country['ActionGeo_FullName']} ({country["EventCount"]})", 'value': country['ActionGeo_CountryCode']}
+				{'label': f"{country['ActionGeo_FullName']} ({country['EventCount']})", 'value': country['ActionGeo_CountryCode']}
 				for country in get_countries_with_most_events().to_records()
 			],
 			value='US',
