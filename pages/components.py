@@ -9,8 +9,8 @@ headers = [
 ]
 
 
-def header(title: str) -> list[Component]:
-	return [
+def header(title: str) -> Component:
+	return html.Header(children=[
 		html.H1(title),
 		*headers
-	]
+	])

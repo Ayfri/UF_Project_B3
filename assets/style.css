@@ -1,0 +1,37 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+:root {
+    --border-radius: 12px;
+}
+
+* {
+    font-family: 'Roboto', sans-serif;
+}
+
+body {
+    margin: 15px 30px;
+}
+
+h1 {
+    font-size: 3rem;
+    margin-bottom: 20px;
+    margin-top: 0;
+}
+
+h2 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+}
+
+header {
+    padding: 20px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.page-content > div:not(:last-child) {
+    border-bottom:  1px solid #e0e0e0;
+}
+
+.dash-dropdown {
+    margin-bottom: 50px;
+}

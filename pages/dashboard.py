@@ -163,9 +163,10 @@ def update_output(
 
 
 # Components
-title = html.H1(children='Dashboard', style={'textAlign': 'center'})
+title = html.H2(children='Dashboard', style={'textAlign': 'center'})
 selection_menu = html.Div(
-    [
+    style={'padding-bottom': '20px'},
+    children=[
         dcc.Store(id='options-store', data=options),  # Store for options
         html.Div(
             [
@@ -220,7 +221,9 @@ fig3 = dcc.Graph(id='graph-content-3', figure=create_empty_figure('Histogram'))
 fig_map = dcc.Graph(id='world-map', figure=create_empty_figure('World Map'))
 
 content = html.Div(
-    [
+    id='dashboard-content',
+    className='page-content',
+    children=[
         title,
         selection_menu,
         fig0,
@@ -234,7 +237,7 @@ content = html.Div(
 
 dashboard_layout = html.Div(
     [
-        *header("Advanced"),
+        header("Advanced"),
         content
     ]
 )

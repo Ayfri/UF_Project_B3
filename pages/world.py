@@ -183,88 +183,101 @@ def get_event_codes_graph(event_code: str) -> graph_objects.Figure:
 
 
 content = html.Div(
-	[
-		dcc.Markdown(
-			"""
-	## Évènements mondiaux
-	Carte des évènements mondiaux.
-	La taille des points représente le nombre d'articles et la couleur l'échelle de Goldstein.
-	"""
-		),
-		dcc.Graph(id='world-content', figure=simple_map_graph()),
-		dcc.Markdown(
-			"""
-	## Évènements mondiaux avec liens
-	Carte des évènements mondiaux avec les liens entre les acteurs.
-	La taille des points représente le nombre d'articles et la couleur l'échelle de Goldstein.
-	Les lignes représentent les liens entre les acteurs.
-	"""
-		),
-		dcc.Graph(id='world-links-content', figure=map_links_graph()),
-		dcc.Markdown(
-			"""
-	## Évènements mondiaux par année
-	Carte des évènements mondiaux par année.
-	La taille des points représente le nombre d'articles et la couleur l'échelle de Goldstein.
-	"""
-		),
-		dcc.Graph(id='world-yearly-content'),
-		dcc.Slider(
-			min=yearly_events_min,
-			max=yearly_events_max,
-			value=2020,
-			step=1,
-			updatemode='drag',
-			id='year-selector',
-			marks={i: str(i) for i in range(yearly_events_min, yearly_events_max + 1)},
-		),
-
-		dcc.Markdown(
-			"""
-	## Évènements mondiaux pour toutes les années
-	Carte des évènements mondiaux pour toutes les années.
-	La taille des points représente le nombre d'articles et la couleur l'échelle de Goldstein.
-	"""
-		),
-		dcc.Graph(id='world-all-years-content', figure=show_all_years()),
-		dcc.Markdown(
-			"""
-			## Évènements des 10 pays avec le plus d'évènements
-			Carte des évènements des 10 pays avec le plus d'évènements.
-			La taille des points représente le nombre d'articles et la couleur l'échelle de Goldstein.
-			"""
-		),
-		dcc.Graph(id='world-country-content'),
-		dcc.Dropdown(
-			options=[
-				{'label': f"{country['ActionGeo_FullName']} ({country['EventCount']})", 'value': country['ActionGeo_CountryCode']}
-				for country in get_countries_with_most_events().to_records()
-			],
-			value='US',
-			id='country-selector',
-		),
-		dcc.Markdown(
-			"""
-			## Évènements pour un code d'évènement
-			Carte des évènements pour un code d'évènement.
-			La taille des points représente le nombre d'articles et la couleur l'échelle de Goldstein.
-			"""
-		),
-		dcc.Graph(id='event-codes-content'),
-		dcc.Dropdown(
-			options=[
-				{'label': f"{code['Description']} ({code['EventCode']})", 'value': str(code['EventCode'])}
-				for code in event_codes.to_records()
-			],
-			value='010',
-			id='event-codes-selector',
-		),
+	id='world-content',
+	className='page-content',
+	children=[
+		html.Div([
+			dcc.Markdown(
+				"""
+				## Évènements mondiaux
+				Carte des évènements mondiaux.
+				La taille des points représente le nombre d'articles et la couleur l'échelle de Goldstein.
+				"""
+			),
+			dcc.Graph(id='world-content', figure=simple_map_graph()),
+		]),
+		html.Div([
+			dcc.Markdown(
+				"""
+				## Évènements mondiaux avec liens
+				Carte des évènements mondiaux avec les liens entre les acteurs.
+				La taille des points représente le nombre d'articles et la couleur l'échelle de Goldstein.
+				Les lignes représentent les liens entre les acteurs.
+				"""
+			),
+			dcc.Graph(id='world-links-content', figure=map_links_graph()),
+		]),
+		html.Div([
+			dcc.Markdown(
+				"""
+				## Évènements mondiaux par année
+				Carte des évènements mondiaux par année.
+				La taille des points représente le nombre d'articles et la couleur l'échelle de Goldstein.
+				"""
+			),
+			dcc.Graph(id='world-yearly-content'),
+			dcc.Slider(
+				min=yearly_events_min,
+				max=yearly_events_max,
+				value=2020,
+				step=1,
+				updatemode='drag',
+				id='year-selector',
+				marks={i: str(i) for i in range(yearly_events_min, yearly_events_max + 1)},
+			)
+		]),
+		html.Div(children=[
+			dcc.Markdown(
+				"""
+				## Évènements mondiaux pour toutes les années
+				Carte des évènements mondiaux pour toutes les années.
+				La taille des points représente le nombre d'articles et la couleur l'échelle de Goldstein.
+				"""
+			),
+			dcc.Graph(id='world-all-years-content', figure=show_all_years()),
+		]),
+		html.Div(children=[
+			dcc.Markdown(
+				"""
+				## Évènements des 10 pays avec le plus d'évènements
+				Carte des évènements des 10 pays avec le plus d'évènements.
+				La taille des points représente le nombre d'articles et la couleur l'échelle de Goldstein.
+				"""
+			),
+			dcc.Graph(id='world-country-content'),
+			dcc.Dropdown(
+				options=[
+					{'label': f"{country['ActionGeo_FullName']} ({country['EventCount']})", 'value': country['ActionGeo_CountryCode']}
+					for country in get_countries_with_most_events().to_records()
+				],
+				value='US',
+				id='country-selector',
+			),
+		]),
+		html.Div(children=[
+			dcc.Markdown(
+				"""
+				## Évènements pour un code d'évènement
+				Carte des évènements pour un code d'évènement.
+				La taille des points représente le nombre d'articles et la couleur l'échelle de Goldstein.
+				"""
+			),
+			dcc.Graph(id='event-codes-content'),
+			dcc.Dropdown(
+				options=[
+					{'label': f"{code['Description']} ({code['EventCode']})", 'value': str(code['EventCode'])}
+					for code in event_codes.to_records()
+				],
+				value='010',
+				id='event-codes-selector',
+			),
+		])
 	]
 )
 
 world_layout = html.Div(
 	[
-		*header('World Page'),
+		header('World Page'),
 		content
 	]
 )
