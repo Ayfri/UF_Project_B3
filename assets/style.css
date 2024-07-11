@@ -23,7 +23,6 @@
 
 body {
     margin: 15px 30px;
-    padding-bottom: 25vh;
 }
 
 h1 {
@@ -64,8 +63,12 @@ p, input, textarea, select {
 }
 
 header {
-    padding: 20px;
     border-bottom: 1px solid var(--separator-color);
+    padding: 1vh 2vw;
+}
+
+header > * {
+    margin-left: 6vw;
 }
 
 nav {
@@ -97,14 +100,24 @@ nav > a::before {
 }
 
 
-#dashboard-content {
+.page-content {
     display: grid;
     place-items: center;
 }
 
-#dashboard-content > * {
+.page-content > * {
     margin-top: 3vh;
     padding: 1vh 2vw;
     border: 1px solid var(--separator-color);
     width: 80%;
+}
+
+footer {
+    margin-top: 2vh;
+    border-top: 1px solid var(--separator-color);
+    padding: 1vh 2vw;
+}
+
+footer > * {
+    margin-left: 6vw;
 }

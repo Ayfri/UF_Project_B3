@@ -7,10 +7,20 @@ headers = [
 ]
 
 
+
+def footer() -> Component:
+	return html.Footer(children=[
+		html.P("Ynov 2023/204 - Bachelore 3 IA Data - Projet UF"),
+		html.Br(),
+		html.P("ROY Pierre - BORELLO Benjamin")
+	])
+
+
 def header(title: str) -> Component:
 	return html.Header(children=[
 		html.H1(title),
 		html.Nav(children=[
 			*headers
 		])
-	])
+	],
+	id="header")

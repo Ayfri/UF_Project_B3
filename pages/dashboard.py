@@ -5,7 +5,7 @@ from dash.exceptions import PreventUpdate
 
 from bq.codes import event_codes
 from bq.queries import get_all_events
-from pages.components import header
+from pages.components import header, footer
 
 from pages.world import create_cartopy_graph
 
@@ -167,6 +167,7 @@ selection_menu = html.Div(
     style={'padding-bottom': '20px'},
     children=[
         dcc.Store(id='options-store', data=options),  # Store for options
+        html.H3("Search"),
         html.Div(
             [
                 html.Label('Location:'),
@@ -240,6 +241,7 @@ content = html.Div(
 dashboard_layout = html.Div(
     [
         header("Advanced"),
-        content
+        content,
+        footer()
     ]
 )

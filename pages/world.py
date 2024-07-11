@@ -11,7 +11,7 @@ from plotly import graph_objects
 
 from bq.codes import add_event_code_names, event_codes
 from bq.queries import get_all_events
-from pages.components import header
+from pages.components import header, footer
 
 
 def create_cartopy_graph(df: pd.DataFrame) -> graph_objects.Figure:
@@ -278,6 +278,7 @@ content = html.Div(
 world_layout = html.Div(
 	[
 		header('World Page'),
-		content
+		content,
+        footer()
 	]
 )
