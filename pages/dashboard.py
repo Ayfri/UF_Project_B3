@@ -24,28 +24,36 @@ def _load_location() -> list:
     return country_codes
 
 def _load_event_types() -> list:
-    with open('data/cameo_mapping.json', 'r') as file:
-        json_data = json.load(file)
+	global cameo_codes
 
-    result = [f"{key} - {value}" for key, value in json_data.items()]
+	with open('data/cameo_mapping.json', 'r') as file:
+		json_data = json.load(file)
 
-    return ["ALL"] + result
+	result = [f"{key} - {value}" for key, value in json_data.items()]
+	
+	return result
 
 def _load_feelings() -> list:
     return [str(x) for x in range(-10, 11, 1)]
 
 def extract_options(options):
-    start_date = int(f"{options.get('start_time', 2000)}0101")
-    end_date = int(f"{options.get('end_time', 2024)}1231")
-    return {
-        'location': options.get('location', 'WORLD'),
-        'start_time': start_date,
-        'end_time': end_date,
-        'event_type': options.get('event_type', 'ALL'),
-        'feeling_min': float(options.get('feeling_min', -10.0)),
-        'feeling_max': float(options.get('feeling_max', 10.0)),
-        'limit': options.get('limit', 100)
-    }
+	start_date = int(f"{options.get('start_time', 2000)}0101")
+	end_date = int(f"{options.get('end_time', 2024)}1231")
+	event_type = options.get('event_type', 'ALL')
+
+	# Extract the CAMEO code if the format is "CODE - DESCRIPTION"
+	if event_type != 'ALL' and " - " in event_type:
+		event_type = event_type.split(" - ")[0]
+
+	return {
+		'location': options.get('location', 'WORLD'),
+		'start_time': start_date,
+		'end_time': end_date,
+		'event_type': event_type,
+		'feeling_min': float(options.get('feeling_min', -10.0)),
+		'feeling_max': float(options.get('feeling_max', 10.0)),
+		'limit': options.get('limit', 100)
+	}
 
 def prepare_where_clauses(options):
     where_clauses = {
