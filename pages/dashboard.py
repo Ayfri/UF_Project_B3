@@ -10,66 +10,66 @@ from pages.components import header
 from pages.world import create_cartopy_graph
 
 options = {
-	'location': 'WORLD',
-	'start_time': 2000,
-	'end_time': 2024,
-	'event_type': 'ALL',
-	'feeling_min': -10,
-	'feeling_max': 10,
-	'limit': 100
+    'location': 'WORLD',
+    'start_time': '2000-01-01',
+    'end_time': '2024-12-31',
+    'event_type': 'ALL',
+    'feeling_min': -10,
+    'feeling_max': 10,
+    'limit': 100
 }
 
 
 # Load dropdown values
 def _load_location() -> list[str]:
-	country_codes_df = pd.read_csv('data/country_codes.csv', header=None)
-	country_codes = country_codes_df[0].tolist()
-	return country_codes
+    country_codes_df = pd.read_csv('data/country_codes.csv', header=None)
+    country_codes = country_codes_df[0].tolist()
+    return country_codes
 
 
 def _load_event_types() -> list[str]:
-	result = [f"{entry['EventCode']} - {entry['Description']}" for entry in event_codes.to_records()]
-	return result
+    result = [f"{entry['EventCode']} - {entry['Description']}" for entry in event_codes.to_records()]
+    return result
 
 
 def extract_options(options: dict):
-	start_date = int(f"{options.get('start_time', 2000)}0101")
-	end_date = int(f"{options.get('end_time', 2024)}1231")
-	event_type = options.get('event_type', 'ALL')
+    start_date = options.get('start_time', '2000-01-01').replace('-', '')
+    end_date = options.get('end_time', '2024-12-31').replace('-', '')
+    event_type = options.get('event_type', 'ALL')
 
-	# Extract the CAMEO code if the format is "CODE - DESCRIPTION"
-	if event_type != 'ALL' and " - " in event_type:
-		event_type = event_type.split(" - ")[0]
+    # Extract the CAMEO code if the format is "CODE - DESCRIPTION"
+    if event_type != 'ALL' and " - " in event_type:
+        event_type = event_type.split(" - ")[0]
 
-	return {
-		'location': options.get('location', 'WORLD'),
-		'start_time': start_date,
-		'end_time': end_date,
-		'event_type': event_type,
-		'feeling_min': float(options.get('feeling_min', -10.0)),
-		'feeling_max': float(options.get('feeling_max', 10.0)),
-		'limit': options.get('limit', 100)
-	}
+    return {
+        'location': options.get('location', 'WORLD'),
+        'start_time': int(start_date),
+        'end_time': int(end_date),
+        'event_type': event_type,
+        'feeling_min': float(options.get('feeling_min', -10.0)),
+        'feeling_max': float(options.get('feeling_max', 10.0)),
+        'limit': options.get('limit', 100)
+    }
 
 
 def prepare_where_clauses(options: dict):
-	where_clauses = {
-		'Actor1Geo_CountryCode': options['location'] if options['location'] != 'WORLD' else None,
-		'SQLDATE>=': options['start_time'],
-		'SQLDATE<=': options['end_time'],
-		'EventRootCode': options['event_type'] if options['event_type'] != 'ALL' else None,
-		'GoldsteinScale>=': options['feeling_min'],
-		'GoldsteinScale<=': options['feeling_max'],
-	}
-	return {k: v for k, v in where_clauses.items() if v is not None}
+    where_clauses = {
+        'Actor1Geo_CountryCode': options['location'] if options['location'] != 'WORLD' else None,
+        'SQLDATE>=': options['start_time'],
+        'SQLDATE<=': options['end_time'],
+        'EventRootCode': options['event_type'] if options['event_type'] != 'ALL' else None,
+        'GoldsteinScale>=': options['feeling_min'],
+        'GoldsteinScale<=': options['feeling_max'],
+    }
+    return {k: v for k, v in where_clauses.items() if v is not None}
 
 
 def create_empty_figure(title: str):
-	# Create a minimal DataFrame with a dummy column
-	df = pd.DataFrame({'dummy_column': []})
-	fig = px.histogram(df, x='dummy_column', title=title)
-	fig.update_layout(xaxis_title="Value", yaxis_title="Count")
-	return fig
+    # Create a minimal DataFrame with a dummy column
+    df = pd.DataFrame({'dummy_column': []})
+    fig = px.histogram(df, x='dummy_column', title=title)
+    fig.update_layout(xaxis_title="Value", yaxis_title="Count")
+    return fig
 
 
 def update_figure_generic(options: dict, x_field: str, y_field: str, chart_type: str):
@@ -102,6 +102,7 @@ def update_figure_generic(options: dict, x_field: str, y_field: str, chart_type:
     fig.update_layout(xaxis_title=x_field, yaxis_title=y_field)
     return fig
 
+
 @callback(
     Output('output-container', 'children'),
     Output('options-store', 'data'),
@@ -112,8 +113,8 @@ def update_figure_generic(options: dict, x_field: str, y_field: str, chart_type:
     Output('world-map', 'figure'),
     Input('update-bt', 'n_clicks'),
     State('dropdown-location', 'value'),
-    State('input-time-start', 'value'),
-    State('input-time-end', 'value'),
+    State('input-time-range', 'start_date'),
+    State('input-time-range', 'end_date'),
     State('dropdown-event', 'value'),
     State('dropdown-feeling-min', 'value'),
     State('dropdown-feeling-max', 'value'),
@@ -122,94 +123,94 @@ def update_figure_generic(options: dict, x_field: str, y_field: str, chart_type:
 def update_output(
     n_clicks: int | None,
     location: str,
-    start_time: int,
-    end_time: int,
+    start_time: str,
+    end_time: str,
     event_type: str,
     feeling_min: str,
     feeling_max: str,
     limit: int
 ):
-	if n_clicks is None or n_clicks == 0:
-		raise PreventUpdate
+    if n_clicks is None or n_clicks == 0:
+        raise PreventUpdate
 
-	global options
-	options = {
-		'location': location,
-		'start_time': start_time,
-		'end_time': end_time,
-		'event_type': event_type,
-		'feeling_min': float(feeling_min),
-		'feeling_max': float(feeling_max),
-		'limit': limit
-	}
+    global options
+    options = {
+        'location': location,
+        'start_time': start_time,
+        'end_time': end_time,
+        'event_type': event_type,
+        'feeling_min': float(feeling_min),
+        'feeling_max': float(feeling_max),
+        'limit': limit
+    }
 
-	extracted_options = extract_options(options)
+    extracted_options = extract_options(options)
 
-	fig0 = update_figure_generic(extracted_options, 'Actor1CountryCode', 'NumberOfEvents', 'bar')
-	fig1 = update_figure_generic(extracted_options, 'Year', 'NumArticles', 'line')
-	fig2 = update_figure_generic(extracted_options, 'Actor1CountryCode', 'GoldsteinScale', 'box')  # Changed to box plot
-	fig3 = update_figure_generic(extracted_options, 'GoldsteinScale', 'Count', 'histogram')
+    fig0 = update_figure_generic(extracted_options, 'Actor1CountryCode', 'NumberOfEvents', 'bar')
+    fig1 = update_figure_generic(extracted_options, 'Year', 'NumArticles', 'line')
+    fig2 = update_figure_generic(extracted_options, 'Actor1CountryCode', 'GoldsteinScale', 'box')  # Changed to box plot
+    fig3 = update_figure_generic(extracted_options, 'GoldsteinScale', 'Count', 'histogram')
 
-	if "EventRootCode" in extracted_options.keys():
-		extracted_options["EventCode"] = extracted_options["EventRootCode"].copy()
-		extracted_options.pop("EventRootCode", None)
+    if "EventRootCode" in extracted_options.keys():
+        extracted_options["EventCode"] = extracted_options["EventRootCode"].copy()
+        extracted_options.pop("EventRootCode", None)
 
-	where_clauses = prepare_where_clauses(extracted_options)
-	df = get_all_events(limit=extracted_options['limit'], order="rand()", **where_clauses)
-	map_fig = create_cartopy_graph(df)
+    where_clauses = prepare_where_clauses(extracted_options)
+    df = get_all_events(limit=extracted_options['limit'], order="rand()", **where_clauses)
+    map_fig = create_cartopy_graph(df)
 
-	return f'Button has been clicked {n_clicks} times.', options, fig0, fig1, fig2, fig3, map_fig
+    return '', options, fig0, fig1, fig2, fig3, map_fig
+
 
 # Components
 title = html.H1(children='Dashboard', style={'textAlign': 'center'})
 selection_menu = html.Div(
-	[
-		dcc.Store(id='options-store', data=options),  # Store for options
-		html.Div(
-			[
-				html.Label('Location:'),
-				dcc.Dropdown(_load_location(), 'WORLD', id='dropdown-location')
-			], style={'margin': '10px'}
-		),
-		html.Div(
-			[
-				html.Label('Event Type:'),
-				dcc.Dropdown(_load_event_types(), 'ALL - All events', id='dropdown-event')
-			], style={'margin': '10px'}
-		),
-		html.Div(
-			[
-				html.Label('Start Time:'),
-				dcc.Input(id='input-time-start', type='number', value=2000, min=1900, max=2024)
-			], style={'margin': '10px'}
-		),
-		html.Div(
-			[
-				html.Label('End Time:'),
-				dcc.Input(id='input-time-end', type='number', value=2024, min=1900, max=2024)
-			], style={'margin': '10px'}
-		),
-		html.Div(
-			[
-				html.Label('Min Feeling:'),
-				dcc.Input(id='dropdown-feeling-min', type='number', value=-10, min=-10, max=10)
-			], style={'margin': '10px'}
-		),
-		html.Div(
-			[
-				html.Label('Max Feeling:'),
-				dcc.Input(id='dropdown-feeling-max', type='number', value=10, min=-10, max=10)
-			], style={'margin': '10px'}
-		),
-		html.Div(
-			[
-				html.Label('Limit:'),
-				dcc.Input(id='input-limit', type='number', value=1000, min=1)
-			], style={'margin': '10px'}
-		),
-		html.Button('Update', id='update-bt', style={'font-size': '24px'}, n_clicks=0),
-		html.Div(id='output-container')
-	]
+    [
+        dcc.Store(id='options-store', data=options),  # Store for options
+        html.Div(
+            [
+                html.Label('Location:'),
+                dcc.Dropdown(_load_location(), 'WORLD', id='dropdown-location')
+            ], style={'margin': '10px'}
+        ),
+        html.Div(
+            [
+                html.Label('Event Type:'),
+                dcc.Dropdown(_load_event_types(), 'ALL - All Events', id='dropdown-event')
+            ], style={'margin': '10px'}
+        ),
+        html.Div(
+            [
+                html.Label('Date Range:'),
+                dcc.DatePickerRange(
+                    id='input-time-range',
+                    start_date='2000-01-01',
+                    end_date='2024-12-31',
+                    display_format='YYYY-MM-DD'
+                )
+            ], style={'margin': '10px'}
+        ),
+        html.Div(
+            [
+                html.Label('Min Feeling:'),
+                dcc.Input(id='dropdown-feeling-min', type='number', value=-10, min=-10, max=10)
+            ], style={'margin': '10px'}
+        ),
+        html.Div(
+            [
+                html.Label('Max Feeling:'),
+                dcc.Input(id='dropdown-feeling-max', type='number', value=10, min=-10, max=10)
+            ], style={'margin': '10px'}
+        ),
+        html.Div(
+            [
+                html.Label('Limit:'),
+                dcc.Input(id='input-limit', type='number', value=1000, min=1)
+            ], style={'margin': '10px'}
+        ),
+        html.Button('Update', id='update-bt', style={'font-size': '24px'}, n_clicks=0),
+        html.Div(id='output-container')
+    ]
 )
 
 fig0 = dcc.Graph(id='graph-content-0', figure=create_empty_figure('Bar Chart'))
@@ -232,8 +233,8 @@ content = html.Div(
 
 
 dashboard_layout = html.Div(
-	[
-		*header("Advanced"),
-		content
-	]
+    [
+        *header("Advanced"),
+        content
+    ]
 )
