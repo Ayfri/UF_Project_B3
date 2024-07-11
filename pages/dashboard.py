@@ -148,6 +148,10 @@ def update_output(
 	fig2 = update_figure_generic(extracted_options, 'GoldsteinScale', 'NumArticles', 'scatter')
 	fig3 = update_figure_generic(extracted_options, 'GoldsteinScale', 'Count', 'histogram')
 
+	if "EventRootCode" in extracted_options.keys():
+		extracted_options["EventCode"] = extracted_options["EventRootCode"].copy()
+		extracted_options.pop("EventRootCode", None)
+
 	where_clauses = prepare_where_clauses(extracted_options)
 	df = get_all_events(limit=extracted_options['limit'], order="rand()", **where_clauses)
 	map_fig = create_cartopy_graph(df)
