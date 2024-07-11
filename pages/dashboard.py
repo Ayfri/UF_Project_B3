@@ -157,13 +157,13 @@ selection_menu = html.Div(
         html.Div(
             [
                 html.Label('Start Time:'),
-                dcc.Input(id='input-time-start', type='number', value=2000, min=2000, max=2024)
+                dcc.Input(id='input-time-start', type='number', value=2000, min=1900, max=2024)
             ], style={'margin': '10px'}
         ),
         html.Div(
             [
                 html.Label('End Time:'),
-                dcc.Input(id='input-time-end', type='number', value=2024, min=2000, max=2024)
+                dcc.Input(id='input-time-end', type='number', value=2024, min=1900, max=2024)
             ], style={'margin': '10px'}
         ),
         html.Div(
