@@ -4,6 +4,8 @@ import pandas as pd
 import json
 
 from dash.exceptions import PreventUpdate
+
+from bq.codes import event_codes
 from bq.queries import get_all_events
 from pages.components import header
 
@@ -17,21 +19,21 @@ options = {
     'limit': 100
 }
 
+
 # Load dropdown values
-def _load_location() -> list:
+def _load_location() -> list[str]:
     country_codes_df = pd.read_csv('data/country_codes.csv', header=None)
     country_codes = country_codes_df[0].tolist()
     return country_codes
 
-def _load_event_types() -> list:
-	global cameo_codes
 
-	with open('data/cameo_mapping.json', 'r') as file:
-		json_data = json.load(file)
-
-	result = [f"{key} - {value}" for key, value in json_data.items()]
-	
+def _load_event_types() -> list[str]:
+	result = [f"{entry['EventCode']} - {entry['Description']}" for entry in event_codes.to_records()]
 	return result
+
+
+def _load_feelings() -> list[str]:
+    return [str(x) for x in range(-10, 11, 1)]
 
 def extract_options(options):
 	start_date = int(f"{options.get('start_time', 2000)}0101")
@@ -52,6 +54,7 @@ def extract_options(options):
 		'limit': options.get('limit', 100)
 	}
 
+
 def prepare_where_clauses(options):
     where_clauses = {
         'Actor1Geo_CountryCode': options['location'] if options['location'] != 'WORLD' else None,
@@ -63,12 +66,14 @@ def prepare_where_clauses(options):
     }
     return {k: v for k, v in where_clauses.items() if v is not None}
 
+
 def create_empty_figure(title):
     # Create a minimal DataFrame with a dummy column
     df = pd.DataFrame({'dummy_column': []})
     fig = px.histogram(df, x='dummy_column', title=title)
     fig.update_layout(xaxis_title="Value", yaxis_title="Count")
     return fig
+
 
 def update_figure_generic(options, x_field, y_field, chart_type):
     where_clauses = prepare_where_clauses(options)
