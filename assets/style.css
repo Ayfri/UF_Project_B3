@@ -2,6 +2,7 @@
 
 :root {
     --border-radius: 12px;
+    --small-border-radius: 6px;
     --accent-color: #2a358d;
     --background-color: #fafafa;
     --invert-background-color: #1a1a1a;
@@ -17,12 +18,22 @@
     --separator-color: #e0e0e0;
 }
 
+html:has(.dark-theme) {
+    --accent-color: #8ff3ff;
+    --background-color: #1a1a1a;
+    --invert-background-color: #fafafa;
+    --separator-color: #666;
+    scrollbar-color: var(--separator-color) var(--background-color);
+}
+
 * {
     font-family: 'Roboto', sans-serif;
 }
 
 body {
     margin: 15px 30px;
+    padding-bottom: 25vh;
+    background-color: var(--background-color);
 }
 
 h1 {
@@ -38,12 +49,42 @@ h2 {
     color: var(--text-color);
 }
 
+h3 {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    color: var(--text-color);
+}
+
 a {
     color: var(--link-color);
 }
 
-p, input, textarea, select {
+#update-bt {
+    background-color: var(--accent-color);
+    color: var(--background-color);
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    padding: 8px 25px;
+    transition: background-color 0.2s;
+}
+
+button:hover {
+    background-color: var(--accent-color-semi-light);
+}
+
+p, input, textarea, select, label {
     color: var(--text-color);
+}
+
+input {
+    background-color: var(--background-color);
+    border-color: var(--border-color);
+    border-radius: var(--small-border-radius);
+    border-style: solid;
+    border-width: 1px;
+    margin: 0 5px;
+    padding: 5px;
 }
 
 .Select-multi-value-wrapper, .Select-value, .Select-menu-outer {
@@ -56,10 +97,48 @@ p, input, textarea, select {
 
 .Select-control, .Select-menu-outer {
     border-color: var(--border-color) !important;
+    background-color: var(--background-color) !important;
 }
 
 .VirtualizedSelectFocusedOption {
     background-color: var(--selected-color) !important;
+}
+
+.DateRangePickerInput {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    margin: 0 5px;
+}
+
+.DateInput, .DateRangePickerInput_arrow, .DateInput_input {
+    background-color: transparent !important;
+    color: var(--text-color) !important;
+}
+
+.DateRangePickerInput__withBorder {
+    border-color: var(--border-color) !important;
+    border-radius: var(--small-border-radius);
+}
+
+.rc-slider-track {
+    background-color: transparent;
+}
+
+.rc-slider-handle {
+    border-color: var(--accent-color) !important;
+}
+
+.rc-slider-dot {
+    border-color: var(--separator-color) !important;
+    background-color: var(--background-color);
+}
+
+.rc-slider-rail {
+    background-color: var(--separator-color);
+}
+
+.rc-slider-mark-text {
+    color: var(--text-color) !important;
 }
 
 header {
@@ -96,9 +175,17 @@ nav > a::before {
 }
 
 .dash-dropdown {
+    margin-bottom: 40px;
+}
+
+.dash-graph {
     margin-bottom: 50px;
 }
 
+#dashboard-content .plot-container {
+    border-radius: var(--border-radius);
+    overflow: hidden;
+}
 
 .page-content {
     display: grid;
@@ -106,10 +193,15 @@ nav > a::before {
 }
 
 .page-content > * {
+    border-radius: var(--border-radius);
+    border: 1px solid var(--separator-color);
     margin-top: 3vh;
     padding: 1vh 2vw;
-    border: 1px solid var(--separator-color);
     width: 80%;
+}
+
+.simple-input {
+    margin: 10px 0;
 }
 
 footer {

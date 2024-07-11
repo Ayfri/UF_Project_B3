@@ -172,13 +172,13 @@ selection_menu = html.Div(
             [
                 html.Label('Location:'),
                 dcc.Dropdown(_load_location(), 'WORLD', id='dropdown-location')
-            ], style={'margin': '10px'}
+            ]
         ),
         html.Div(
             [
                 html.Label('Event Type:'),
                 dcc.Dropdown(_load_event_types(), 'ALL - All Events', id='dropdown-event')
-            ], style={'margin': '10px'}
+            ]
         ),
         html.Div(
             [
@@ -189,25 +189,29 @@ selection_menu = html.Div(
                     end_date='2024-12-31',
                     display_format='YYYY-MM-DD'
                 )
-            ], style={'margin': '10px'}
+            ],
+            className='simple-input'
         ),
         html.Div(
             [
                 html.Label('Min Feeling:'),
                 dcc.Input(id='dropdown-feeling-min', type='number', value=-10, min=-10, max=10)
-            ], style={'margin': '10px'}
+            ],
+            className='simple-input'
         ),
         html.Div(
             [
                 html.Label('Max Feeling:'),
                 dcc.Input(id='dropdown-feeling-max', type='number', value=10, min=-10, max=10)
-            ], style={'margin': '10px'}
+            ],
+            className='simple-input'
         ),
         html.Div(
             [
                 html.Label('Limit:'),
                 dcc.Input(id='input-limit', type='number', value=1000, min=1)
-            ], style={'margin': '10px'}
+            ],
+            className='simple-input'
         ),
         html.Button('Update', id='update-bt', style={'font-size': '24px'}, n_clicks=0),
         html.Div(id='output-container')
