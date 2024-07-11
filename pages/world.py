@@ -1,3 +1,4 @@
+import numpy as np
 import json
 from datetime import datetime
 from functools import cache
@@ -18,6 +19,11 @@ def create_cartopy_graph(df: pd.DataFrame) -> graph_objects.Figure:
 	df['timestamp'] = pd.to_datetime(df['SQLDATE'], format='%Y%m%d', errors='coerce')
 	df['formatted-date'] = df['timestamp'].dt.strftime('%d %B %Y')
 	df = add_event_code_names(df)
+
+	# Add noise
+	noise_level = 0.5
+	df['ActionGeo_Lat'] += np.random.uniform(-noise_level, noise_level, size=len(df))
+	df['ActionGeo_Long'] += np.random.uniform(-noise_level, noise_level, size=len(df))
 
 	fig = px.scatter_mapbox(
 		df,
