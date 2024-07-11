@@ -30,10 +30,6 @@ def _load_event_types() -> list[str]:
 	return result
 
 
-def _load_feelings() -> list[str]:
-	return [str(x) for x in range(-10, 11, 1)]
-
-
 def extract_options(options: dict):
 	start_date = int(f"{options.get('start_time', 2000)}0101")
 	end_date = int(f"{options.get('end_time', 2024)}1231")
@@ -59,7 +55,7 @@ def prepare_where_clauses(options: dict):
 		'Actor1Geo_CountryCode': options['location'] if options['location'] != 'WORLD' else None,
 		'SQLDATE>=': options['start_time'],
 		'SQLDATE<=': options['end_time'],
-		'EventCode': options['event_type'] if options['event_type'] != 'ALL' else None,
+		'EventRootCode': options['event_type'] if options['event_type'] != 'ALL' else None,
 		'GoldsteinScale>=': options['feeling_min'],
 		'GoldsteinScale<=': options['feeling_max'],
 	}
@@ -76,7 +72,7 @@ def create_empty_figure(title: str):
 
 def update_figure_generic(options: dict, x_field: str, y_field: str, chart_type: str):
 	where_clauses = prepare_where_clauses(options)
-	df = get_all_events(limit=options['limit'], **where_clauses)
+	df = get_all_events(limit=options['limit'], order="rand()", **where_clauses)
 
 	if df.empty:
 		return create_empty_figure(f'No data available for the selected criteria: {chart_type}')
