@@ -1,18 +1,20 @@
+import json
 from datetime import datetime
+from functools import cache
 
 import pandas as pd
-from dash import dcc, html
+from dash import callback, dcc, html, Input, Output, State
 from dash.html import Figure
 
 import plotly.express as px
 from plotly import graph_objects
 
-from bq.codes import add_event_code_names
+from bq.codes import add_event_code_names, event_codes
 from bq.queries import get_all_events
 from pages.components import header
 
 
-def create_cartopy_graph(df: pd.DataFrame)-> graph_objects.Figure:
+def create_cartopy_graph(df: pd.DataFrame) -> graph_objects.Figure:
 	df['timestamp'] = pd.to_datetime(df['SQLDATE'], format='%Y%m%d', errors='coerce')
 	df['formatted-date'] = df['timestamp'].dt.strftime('%d %B %Y')
 	df = add_event_code_names(df)
@@ -35,6 +37,7 @@ def create_cartopy_graph(df: pd.DataFrame)-> graph_objects.Figure:
 		height=900,
 		size='NumArticles',
 		color='GoldsteinScale',
+		range_color=[-10, 10],
 		size_max=30,
 		mapbox_style="open-street-map",
 		labels={
@@ -65,13 +68,13 @@ def create_cartopy_graph(df: pd.DataFrame)-> graph_objects.Figure:
 
 
 def simple_map_graph() -> Figure:
-	df = get_all_events(limit=1_000, order='rand()')
+	df = get_all_events(limit=2_000, order='rand()')
 	graph = create_cartopy_graph(df)
 	return graph
 
 
 def map_links_graph() -> Figure:
-	df = get_all_events(limit=1_000, order='rand()', ActionGeo_Type=1, Actor2Geo_Lat="!=None")
+	df = get_all_events(limit=2_000, order='rand()', ActionGeo_Type=1, Actor2Geo_Lat="!=None")
 	graph = create_cartopy_graph(df)
 
 	# Collect lat/lon coordinates for lines
@@ -96,23 +99,172 @@ def map_links_graph() -> Figure:
 	return graph
 
 
-content = html.Div([
-	dcc.Markdown("""
+yearly_events_min = 2005
+yearly_events_max = 2024
+
+
+@cache
+def get_all_yearly_events() -> pd.DataFrame:
+	"""Get all events for the last n years."""
+	df = pd.concat([get_all_events(limit=5_000, order='rand()', Year=year) for year in range(yearly_events_min, yearly_events_max + 1)])
+	return df
+
+
+@cache
+def get_events_of_year(year: int) -> pd.DataFrame:
+	"""Get all events for a specific year."""
+
+	return get_all_yearly_events().query(f'Year == {year}').copy()
+
+
+@callback(
+	Output('world-yearly-content', 'figure'),
+	Input('year-selector', 'value'),
+)
+def simple_map_graph_yearly(year: int = yearly_events_max) -> graph_objects.Figure:
+	df = get_events_of_year(year)
+	graph = create_cartopy_graph(df)
+	return graph
+
+
+def show_all_years() -> graph_objects.Figure:
+	"""Show all years."""
+	df = get_all_yearly_events()
+	graph = create_cartopy_graph(df)
+	return graph
+
+
+@cache
+def get_countries_with_most_events(count: int = 10) -> pd.DataFrame:
+	"""Get the countries with the most events."""
+	df = get_all_yearly_events()
+
+	# Count the number of events per country code and get the top `count`
+	most_events_countries = df['ActionGeo_CountryCode'].value_counts().head(count).reset_index()
+	most_events_countries.columns = ['ActionGeo_CountryCode', 'EventCount']
+
+	# Get the first occurrence of each country code with its full name
+	country_code_full_name = df[['ActionGeo_CountryCode', 'ActionGeo_FullName']].drop_duplicates('ActionGeo_CountryCode')
+
+	# Merge to add the full name to the top `count` countries
+	most_events_countries = most_events_countries.merge(country_code_full_name, on='ActionGeo_CountryCode', how='left')
+
+	return most_events_countries
+
+
+@cache
+def get_events_of_country(country: str) -> pd.DataFrame:
+	"""Get all events for a specific country."""
+	df = get_all_yearly_events()
+	return df.query(f'ActionGeo_CountryCode == "{country}"').copy()
+
+
+@callback(
+	Output('world-country-content', 'figure'),
+	Input('country-selector', 'value'),
+)
+def get_countries_events_graph(country: str) -> graph_objects.Figure:
+	"""Get events for a specific country."""
+	df = get_events_of_country(country)
+	graph = create_cartopy_graph(df)
+	graph.update_layout(mapbox={'zoom': 4, 'center': {'lat': df['ActionGeo_Lat'].mean(), 'lon': df['ActionGeo_Long'].mean()}})
+	return graph
+
+
+@callback(
+	Output('event-codes-content', 'figure'),
+	Input('event-codes-selector', 'value'),
+)
+def get_event_codes_graph(event_code: str) -> graph_objects.Figure:
+	"""Get events for a specific event code."""
+	df = get_all_events(limit=5_000, order='rand()', EventCode=event_code)
+	graph = create_cartopy_graph(df)
+	return graph
+
+
+content = html.Div(
+	[
+		dcc.Markdown(
+			"""
 	## Évènements mondiaux
 	Carte des évènements mondiaux.
 	La taille des points représente le nombre d'articles et la couleur l'échelle de Goldstein.
-	"""),
-	dcc.Graph(id='world-content', figure=simple_map_graph()),
-	dcc.Markdown("""
+	"""
+		),
+		dcc.Graph(id='world-content', figure=simple_map_graph()),
+		dcc.Markdown(
+			"""
 	## Évènements mondiaux avec liens
 	Carte des évènements mondiaux avec les liens entre les acteurs.
 	La taille des points représente le nombre d'articles et la couleur l'échelle de Goldstein.
 	Les lignes représentent les liens entre les acteurs.
-	"""),
-	dcc.Graph(id='world-links-content', figure=map_links_graph()),
-])
+	"""
+		),
+		dcc.Graph(id='world-links-content', figure=map_links_graph()),
+		dcc.Markdown(
+			"""
+	## Évènements mondiaux par année
+	Carte des évènements mondiaux par année.
+	La taille des points représente le nombre d'articles et la couleur l'échelle de Goldstein.
+	"""
+		),
+		dcc.Graph(id='world-yearly-content'),
+		dcc.Slider(
+			min=yearly_events_min,
+			max=yearly_events_max,
+			value=2020,
+			step=1,
+			updatemode='drag',
+			id='year-selector',
+			marks={i: str(i) for i in range(yearly_events_min, yearly_events_max + 1)},
+		),
 
-world_layout = html.Div([
-	*header('World Page'),
-	content
-])
+		dcc.Markdown(
+			"""
+	## Évènements mondiaux pour toutes les années
+	Carte des évènements mondiaux pour toutes les années.
+	La taille des points représente le nombre d'articles et la couleur l'échelle de Goldstein.
+	"""
+		),
+		dcc.Graph(id='world-all-years-content', figure=show_all_years()),
+		dcc.Markdown(
+			"""
+			## Évènements des 10 pays avec le plus d'évènements
+			Carte des évènements des 10 pays avec le plus d'évènements.
+			La taille des points représente le nombre d'articles et la couleur l'échelle de Goldstein.
+			"""
+		),
+		dcc.Graph(id='world-country-content'),
+		dcc.Dropdown(
+			options=[
+				{'label': f"{country['ActionGeo_FullName']} ({country["EventCount"]})", 'value': country['ActionGeo_CountryCode']}
+				for country in get_countries_with_most_events().to_records()
+			],
+			value='US',
+			id='country-selector',
+		),
+		dcc.Markdown(
+			"""
+			## Évènements pour un code d'évènement
+			Carte des évènements pour un code d'évènement.
+			La taille des points représente le nombre d'articles et la couleur l'échelle de Goldstein.
+			"""
+		),
+		dcc.Graph(id='event-codes-content'),
+		dcc.Dropdown(
+			options=[
+				{'label': f"{code['Description']} ({code['EventCode']})", 'value': str(code['EventCode'])}
+				for code in event_codes.to_records()
+			],
+			value='010',
+			id='event-codes-selector',
+		),
+	]
+)
+
+world_layout = html.Div(
+	[
+		*header('World Page'),
+		content
+	]
+)
