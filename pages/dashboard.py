@@ -7,6 +7,8 @@ from bq.codes import event_codes
 from bq.queries import get_all_events
 from pages.components import header
 
+from pages.world import simple_map_graph
+
 options = {
 	'location': 'WORLD',
 	'start_time': 2000,
@@ -99,30 +101,31 @@ def update_figure_generic(options: dict, x_field: str, y_field: str, chart_type:
 
 
 @callback(
-	Output('output-container', 'children'),
-	Output('options-store', 'data'),
-	Output('graph-content-0', 'figure'),
-	Output('graph-content-1', 'figure'),
-	Output('graph-content-2', 'figure'),
-	Output('graph-content-3', 'figure'),
-	Input('update-bt', 'n_clicks'),
-	State('dropdown-location', 'value'),
-	State('input-time-start', 'value'),
-	State('input-time-end', 'value'),
-	State('dropdown-event', 'value'),
-	State('dropdown-feeling-min', 'value'),
-	State('dropdown-feeling-max', 'value'),
-	State('input-limit', 'value')
+    Output('output-container', 'children'),
+    Output('options-store', 'data'),
+    Output('graph-content-0', 'figure'),
+    Output('graph-content-1', 'figure'),
+    Output('graph-content-2', 'figure'),
+    Output('graph-content-3', 'figure'),
+    Output('world-map', 'figure'),
+    Input('update-bt', 'n_clicks'),
+    State('dropdown-location', 'value'),
+    State('input-time-start', 'value'),
+    State('input-time-end', 'value'),
+    State('dropdown-event', 'value'),
+    State('dropdown-feeling-min', 'value'),
+    State('dropdown-feeling-max', 'value'),
+    State('input-limit', 'value')
 )
 def update_output(
-	n_clicks: int | None,
-	location: str,
-	start_time: int,
-	end_time: int,
-	event_type: str,
-	feeling_min: str,
-	feeling_max: str,
-	limit: int
+    n_clicks: int | None,
+    location: str,
+    start_time: int,
+    end_time: int,
+    event_type: str,
+    feeling_min: str,
+    feeling_max: str,
+    limit: int
 ):
 	if n_clicks is None or n_clicks == 0:
 		raise PreventUpdate
@@ -145,7 +148,11 @@ def update_output(
 	fig2 = update_figure_generic(extracted_options, 'GoldsteinScale', 'NumArticles', 'scatter')
 	fig3 = update_figure_generic(extracted_options, 'GoldsteinScale', 'Count', 'histogram')
 
-	return f'Button has been clicked {n_clicks} times.', options, fig0, fig1, fig2, fig3
+	where_clauses = prepare_where_clauses(options)
+	df = get_all_events(limit=options['limit'], order="rand()", **where_clauses)
+	map_fig = simple_map_graph(df)
+
+	return f'Button has been clicked {n_clicks} times.', options, fig0, fig1, fig2, fig3, map_fig
 
 
 # Components
@@ -199,22 +206,25 @@ selection_menu = html.Div(
 		html.Div(id='output-container')
 	]
 )
+
 fig0 = dcc.Graph(id='graph-content-0', figure=create_empty_figure('Bar Chart'))
 fig1 = dcc.Graph(id='graph-content-1', figure=create_empty_figure('Line Chart'))
 fig2 = dcc.Graph(id='graph-content-2', figure=create_empty_figure('Scatter Plot'))
 fig3 = dcc.Graph(id='graph-content-3', figure=create_empty_figure('Histogram'))
+fig_map = dcc.Graph(id='world-map', figure=create_empty_figure('World Map'))
 
-# Content + layout
 content = html.Div(
-	[
-		title,
-		selection_menu,
-		fig0,
-		fig1,
-		fig2,
-		fig3
-	]
+    [
+        title,
+        selection_menu,
+        fig0,
+        fig1,
+        fig2,
+        fig3,
+        fig_map,  # Add the map figure to the content
+    ]
 )
+
 
 dashboard_layout = html.Div(
 	[

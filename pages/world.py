@@ -67,8 +67,8 @@ def create_cartopy_graph(df: pd.DataFrame) -> graph_objects.Figure:
 	return fig
 
 
-def simple_map_graph() -> Figure:
-	df = get_all_events(limit=2_000, order='rand()')
+def simple_map_graph(input = None) -> Figure:
+	df = get_all_events(limit=2_000, order='rand()') if input is None else input
 	graph = create_cartopy_graph(df)
 	return graph
 
