@@ -7,7 +7,7 @@ from bq.codes import event_codes
 from bq.queries import get_all_events
 from pages.components import header
 
-from pages.world import simple_map_graph
+from pages.world import create_cartopy_graph
 
 options = {
 	'location': 'WORLD',
@@ -148,9 +148,9 @@ def update_output(
 	fig2 = update_figure_generic(extracted_options, 'GoldsteinScale', 'NumArticles', 'scatter')
 	fig3 = update_figure_generic(extracted_options, 'GoldsteinScale', 'Count', 'histogram')
 
-	where_clauses = prepare_where_clauses(options)
-	df = get_all_events(limit=options['limit'], order="rand()", **where_clauses)
-	map_fig = simple_map_graph(df)
+	where_clauses = prepare_where_clauses(extracted_options)
+	df = get_all_events(limit=extracted_options['limit'], order="rand()", **where_clauses)
+	map_fig = create_cartopy_graph(df)
 
 	return f'Button has been clicked {n_clicks} times.', options, fig0, fig1, fig2, fig3, map_fig
 
