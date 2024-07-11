@@ -10,6 +10,7 @@
 
 body {
     margin: 15px 30px;
+    padding-bottom: 25vh;
 }
 
 h1 {
@@ -34,4 +35,17 @@ header {
 
 .dash-dropdown {
     margin-bottom: 50px;
+}
+
+
+#dashboard-content {
+    display: grid;
+    place-items: center;
+}
+
+#dashboard-content > * {
+    margin-top: 3vh;
+    padding: 1vh 2vw;
+    border: 1px solid #e0e0e0;
+    width: 80%;
 }

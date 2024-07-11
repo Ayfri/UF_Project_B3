@@ -163,7 +163,6 @@ def update_output(
 
 
 # Components
-title = html.H2(children='Dashboard', style={'textAlign': 'center'})
 selection_menu = html.Div(
     style={'padding-bottom': '20px'},
     children=[
@@ -211,7 +210,8 @@ selection_menu = html.Div(
         ),
         html.Button('Update', id='update-bt', style={'font-size': '24px'}, n_clicks=0),
         html.Div(id='output-container')
-    ]
+    ],
+    id="inputs-container"
 )
 
 fig0 = dcc.Graph(id='graph-content-0', figure=create_empty_figure('Bar Chart'))
@@ -224,13 +224,15 @@ content = html.Div(
     id='dashboard-content',
     className='page-content',
     children=[
-        title,
         selection_menu,
         fig0,
         fig1,
         fig2,
         fig3,
-        fig_map,  # Add the map figure to the content
+        html.Div([
+            html.Label('World Map'),
+            fig_map,  # Add the map figure to the content
+        ])
     ]
 )
 
