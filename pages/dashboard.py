@@ -73,32 +73,34 @@ def create_empty_figure(title: str):
 
 
 def update_figure_generic(options: dict, x_field: str, y_field: str, chart_type: str):
-	where_clauses = prepare_where_clauses(options)
-	df = get_all_events(limit=options['limit'], order="rand()", **where_clauses)
+    where_clauses = prepare_where_clauses(options)
+    df = get_all_events(limit=options['limit'], order="rand()", **where_clauses)
 
-	if df.empty:
-		return create_empty_figure(f'No data available for the selected criteria: {chart_type}')
+    if df.empty:
+        return create_empty_figure(f'No data available for the selected criteria: {chart_type}')
 
-	if chart_type == 'bar':
-		# Group by country and count the number of events for each country
-		df = df.groupby(x_field).size().reset_index(name='NumberOfEvents').sort_values(by='NumberOfEvents', ascending=False).head(20)
-		fig = px.bar(df, x=x_field, y='NumberOfEvents', title=f'Number of Events by Country')
-	elif chart_type == 'line':
-		# Group by year and sum NumArticles for each year
-		df['Year'] = df['SQLDATE'].astype(str).str[:4].astype(int)
-		df = df.groupby('Year')['NumArticles'].sum().reset_index()
-		fig = px.line(df, x='Year', y='NumArticles', title=f'{y_field} by Year')
-	elif chart_type == 'scatter':
-		fig = px.scatter(df, x=x_field, y=y_field, title=f'{y_field} by {x_field}')
-	elif chart_type == 'histogram':
-		# Use bin size to improve precision for float values in GoldsteinScale
-		fig = px.histogram(df, x=x_field, nbins=50, title=f'{x_field} Distribution')
-	else:
-		raise ValueError("Unsupported chart type")
+    if chart_type == 'bar':
+        # Group by country and count the number of events for each country
+        df = df.groupby(x_field).size().reset_index(name='NumberOfEvents').sort_values(by='NumberOfEvents', ascending=False).head(20)
+        fig = px.bar(df, x=x_field, y='NumberOfEvents', title=f'Number of Events by Country')
+    elif chart_type == 'line':
+        # Group by year and sum NumArticles for each year
+        df['Year'] = df['SQLDATE'].astype(str).str[:4].astype(int)
+        df = df.groupby('Year')['NumArticles'].sum().reset_index()
+        fig = px.line(df, x='Year', y='NumArticles', title=f'{y_field} by Year')
+    elif chart_type == 'box':
+        # Filter top 10 countries by number of events and create box plot for GoldsteinScale
+        top_countries = df['Actor1CountryCode'].value_counts().head(10).index
+        df_top_countries = df[df['Actor1CountryCode'].isin(top_countries)]
+        fig = px.box(df_top_countries, x='Actor1CountryCode', y='GoldsteinScale', title='Goldstein Scale by Top 10 Countries')
+    elif chart_type == 'histogram':
+        # Use bin size to improve precision for float values in GoldsteinScale
+        fig = px.histogram(df, x=x_field, nbins=50, title=f'{x_field} Distribution')
+    else:
+        raise ValueError("Unsupported chart type")
 
-	fig.update_layout(xaxis_title=x_field, yaxis_title=y_field)
-	return fig
-
+    fig.update_layout(xaxis_title=x_field, yaxis_title=y_field)
+    return fig
 
 @callback(
     Output('output-container', 'children'),
@@ -145,7 +147,7 @@ def update_output(
 
 	fig0 = update_figure_generic(extracted_options, 'Actor1CountryCode', 'NumberOfEvents', 'bar')
 	fig1 = update_figure_generic(extracted_options, 'Year', 'NumArticles', 'line')
-	fig2 = update_figure_generic(extracted_options, 'GoldsteinScale', 'NumArticles', 'scatter')
+	fig2 = update_figure_generic(extracted_options, 'Actor1CountryCode', 'GoldsteinScale', 'box')  # Changed to box plot
 	fig3 = update_figure_generic(extracted_options, 'GoldsteinScale', 'Count', 'histogram')
 
 	if "EventRootCode" in extracted_options.keys():
@@ -157,7 +159,6 @@ def update_output(
 	map_fig = create_cartopy_graph(df)
 
 	return f'Button has been clicked {n_clicks} times.', options, fig0, fig1, fig2, fig3, map_fig
-
 
 # Components
 title = html.H1(children='Dashboard', style={'textAlign': 'center'})
