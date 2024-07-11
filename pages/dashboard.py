@@ -33,9 +33,6 @@ def _load_event_types() -> list:
 	
 	return result
 
-def _load_feelings() -> list:
-    return [str(x) for x in range(-10, 11, 1)]
-
 def extract_options(options):
 	start_date = int(f"{options.get('start_time', 2000)}0101")
 	end_date = int(f"{options.get('end_time', 2024)}1231")
@@ -75,7 +72,7 @@ def create_empty_figure(title):
 
 def update_figure_generic(options, x_field, y_field, chart_type):
     where_clauses = prepare_where_clauses(options)
-    df = get_all_events(limit=options['limit'], **where_clauses)
+    df = get_all_events(limit=options['limit'], order="rand()", **where_clauses)
     
     if df.empty:
         return create_empty_figure(f'No data available for the selected criteria: {chart_type}')
@@ -151,6 +148,12 @@ selection_menu = html.Div(
                 dcc.Dropdown(_load_location(), 'WORLD', id='dropdown-location')
             ], style={'margin': '10px'}
         ),
+		html.Div(
+            [
+                html.Label('Event Type:'),
+                dcc.Dropdown(_load_event_types(), 'ALL - All events', id='dropdown-event')
+            ], style={'margin': '10px'}
+        ),
         html.Div(
             [
                 html.Label('Start Time:'),
@@ -165,26 +168,20 @@ selection_menu = html.Div(
         ),
         html.Div(
             [
-                html.Label('Event Type:'),
-                dcc.Dropdown(_load_event_types(), 'ALL', id='dropdown-event')
-            ], style={'margin': '10px'}
-        ),
-        html.Div(
-            [
                 html.Label('Min Feeling:'),
-                dcc.Dropdown(_load_feelings(), '-10', id='dropdown-feeling-min')
+                dcc.Input(id='dropdown-feeling-min', type='number', value=-10, min=-10, max=10)
             ], style={'margin': '10px'}
         ),
         html.Div(
             [
                 html.Label('Max Feeling:'),
-                dcc.Dropdown(_load_feelings(), '10', id='dropdown-feeling-max')
+                dcc.Input(id='dropdown-feeling-max', type='number', value=10, min=-10, max=10)
             ], style={'margin': '10px'}
         ),
         html.Div(
             [
                 html.Label('Limit:'),
-                dcc.Input(id='input-limit', type='number', value=100, min=1)
+                dcc.Input(id='input-limit', type='number', value=1000, min=1)
             ], style={'margin': '10px'}
         ),
         html.Button('Update', id='update-bt', style={'font-size': '24px'}, n_clicks=0),
