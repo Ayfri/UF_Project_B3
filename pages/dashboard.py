@@ -57,7 +57,7 @@ def prepare_where_clauses(options):
         'Actor1Geo_CountryCode': options['location'] if options['location'] != 'WORLD' else None,
         'SQLDATE>=': options['start_time'],
         'SQLDATE<=': options['end_time'],
-        'EventRootCode': options['event_type'] if options['event_type'] != 'ALL' else None,
+        'EventCode': options['event_type'] if options['event_type'] != 'ALL' else None,
         'GoldsteinScale>=': options['feeling_min'],
         'GoldsteinScale<=': options['feeling_max'],
     }
