@@ -74,13 +74,13 @@ def create_cartopy_graph(df: pd.DataFrame) -> graph_objects.Figure:
 
 
 def simple_map_graph(data = None) -> Figure:
-	df = get_all_events(limit=2_000, order='rand()') if data is None else data
+	df = get_all_events(limit=5_000, order='rand()') if data is None else data
 	graph = create_cartopy_graph(df)
 	return graph
 
 
 def map_links_graph() -> Figure:
-	df = get_all_events(limit=2_000, order='rand()', ActionGeo_Type=1, Actor2Geo_Lat="!=None")
+	df = get_all_events(limit=5_000, order='rand()', ActionGeo_Type=1, Actor2Geo_Lat="!=None")
 	graph = create_cartopy_graph(df)
 
 	# Collect lat/lon coordinates for lines
@@ -196,8 +196,9 @@ content = html.Div(
 			dcc.Markdown(
 				"""
 				## Évènements mondiaux
-				Carte des évènements mondiaux.
-				La taille des points représente le nombre d'articles et la couleur l'échelle de Goldstein.
+				Carte des évènements mondiaux.  
+				La taille des points représente le nombre d'articles et la couleur l'échelle de Goldstein.  
+				Limites : _5000 events distribuées aléatoirement entre 2000-01-01 et 2024-12-31_
 				"""
 			),
 			dcc.Graph(id='world-content', figure=simple_map_graph()),
@@ -206,9 +207,10 @@ content = html.Div(
 			dcc.Markdown(
 				"""
 				## Évènements mondiaux avec liens
-				Carte des évènements mondiaux avec les liens entre les acteurs.
-				La taille des points représente le nombre d'articles et la couleur l'échelle de Goldstein.
-				Les lignes représentent les liens entre les acteurs.
+				Carte des évènements mondiaux avec les liens entre les acteurs.  
+				La taille des points représente le nombre d'articles et la couleur l'échelle de Goldstein.  
+				Les lignes représentent les liens entre les acteurs.  
+				Limites : _5000 events distribuées aléatoirement entre 2000-01-01 et 2024-12-31_
 				"""
 			),
 			dcc.Graph(id='world-links-content', figure=map_links_graph()),
@@ -217,8 +219,9 @@ content = html.Div(
 			dcc.Markdown(
 				"""
 				## Évènements mondiaux par année
-				Carte des évènements mondiaux par année.
-				La taille des points représente le nombre d'articles et la couleur l'échelle de Goldstein.
+				Carte des évènements mondiaux par année.  
+				La taille des points représente le nombre d'articles et la couleur l'échelle de Goldstein.  
+				Limites : _5000 events distribuées aléatoirement entre YYYY-01-01 et YYYY-12-31_
 				"""
 			),
 			dcc.Graph(id='world-yearly-content'),
@@ -236,8 +239,9 @@ content = html.Div(
 			dcc.Markdown(
 				"""
 				## Évènements mondiaux pour toutes les années
-				Carte des évènements mondiaux pour toutes les années.
-				La taille des points représente le nombre d'articles et la couleur l'échelle de Goldstein.
+				Carte des évènements mondiaux pour toutes les années.  
+				La taille des points représente le nombre d'articles et la couleur l'échelle de Goldstein.    
+				Limites : _5000 events distribuées aléatoirement entre 2000-01-01 et 2024-12-31_
 				"""
 			),
 			dcc.Graph(id='world-all-years-content', figure=show_all_years()),
@@ -246,8 +250,9 @@ content = html.Div(
 			dcc.Markdown(
 				"""
 				## Évènements des 10 pays avec le plus d'évènements
-				Carte des évènements des 10 pays avec le plus d'évènements.
-				La taille des points représente le nombre d'articles et la couleur l'échelle de Goldstein.
+				Carte des évènements des 10 pays avec le plus d'évènements.  
+				La taille des points représente le nombre d'articles et la couleur l'échelle de Goldstein.   
+				Limites : _5000 events distribuées aléatoirement entre 2000-01-01 et 2024-12-31_
 				"""
 			),
 			dcc.Graph(id='world-country-content'),
@@ -264,8 +269,9 @@ content = html.Div(
 			dcc.Markdown(
 				"""
 				## Évènements pour un code d'évènement
-				Carte des évènements pour un code d'évènement.
-				La taille des points représente le nombre d'articles et la couleur l'échelle de Goldstein.
+				Carte des évènements pour un code d'évènement.  
+				La taille des points représente le nombre d'articles et la couleur l'échelle de Goldstein.    
+				Limites : _5000 events distribuées aléatoirement entre 2000-01-01 et 2024-12-31_
 				"""
 			),
 			dcc.Graph(id='event-codes-content'),
