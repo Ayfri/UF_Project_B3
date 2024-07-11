@@ -232,8 +232,7 @@ content = html.Div(
 
 dashboard_layout = html.Div(
 	[
-		*header("Dashboard"),
-		dcc.Link('World map', '/world'),
+		*header("Advanced"),
 		content
 	]
 )

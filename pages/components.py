@@ -2,11 +2,9 @@ from dash import dcc, html
 from dash.development.base_component import Component
 
 headers = [
-	dcc.Link('Home', href='/'),
+	dcc.Link('World Page', href='/'),
 	html.Br(),
-	dcc.Link('Dashboard', href='/dashboard'),
-	html.Br(),
-	dcc.Link('Search', href='/search'),
+	dcc.Link('Advanced Search', href='/advanced'),
 	html.Br(),
 ]
 
